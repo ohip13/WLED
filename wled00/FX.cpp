@@ -159,9 +159,9 @@ static const char _data_FX_MODE_STROBE_RAINBOW[] PROGMEM = "Strobe Rainbow@!;,!;
  * LEDs are turned on (color1) in sequence, then turned off (color2) in sequence.
  * if (bool rev == true) then LEDs are turned off in reverse order
  */
-uint16_t color_wipe(bool rev, bool useRandomColors) {
-  uint32_t cycleTime = 750 + (255 - SEGMENT.speed)*150;
-  uint32_t perc = strip.now % cycleTime;
+uint16_t color_wipe(bool rev, bool useRandomColors, uint32_t startTime = 0) {
+  uint32_t cycleTime = 65535 - 39000 + 750 + (255 - SEGMENT.speed)*150;
+  uint32_t perc = (strip.now - startTime) % cycleTime;
   uint16_t prog = (perc * 65535) / cycleTime;
   bool back = (prog > 32767);
   if (back) {
@@ -218,6 +218,16 @@ uint16_t mode_color_wipe(void) {
   return color_wipe(false, false);
 }
 static const char _data_FX_MODE_COLOR_WIPE[] PROGMEM = "Wipe@!,!;!,!;!";
+
+
+/*
+ * Lights all LEDs one after another.
+ */
+uint16_t mode_color_wipe_top(void) {
+  static uint32_t startTime = strip.now;
+  return color_wipe(false, false, startTime);
+}
+static const char _data_FX_MODE_COLOR_WIPE_TOP[] PROGMEM = "Wipe Top@!,!;!,!;!";
 
 
 /*
@@ -7823,5 +7833,9 @@ void WS2812FX::setupEffectData() {
 
   addEffect(FX_MODE_2DAKEMI, &mode_2DAkemi, _data_FX_MODE_2DAKEMI); // audio
 #endif // WLED_DISABLE_2D
+
+  // Custom effect
+  addEffect(FX_MODE_COLOR_WIPE_TOP, &mode_color_wipe_top, _data_FX_MODE_COLOR_WIPE_TOP);
+
 
 }
